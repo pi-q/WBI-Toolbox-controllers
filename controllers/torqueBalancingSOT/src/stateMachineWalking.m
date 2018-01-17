@@ -1,8 +1,8 @@
-function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos, PDgainsRot, currentState, jointsSmoothingTime,...
-          desRootRotPosVelAcc,desLFootRotPosVelAcc,desLFootOrigin,desRFootRotPosVelAcc,desRFootOrigin] ...
-         = stateMachineWalking(qj, qj0, CoM_0, ...
-                               l_sole_CoM, r_sole_CoM, l_sole_H_b, r_sole_H_b, rotFrame_H_b0, ...
-                               wrench_leftFoot, wrench_rightFoot, sm, gain, CONFIG)
+function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,PDgainsRot, currentState, jointsSmoothingTime,...
+          desRootRotPosVelAcc, desLFootRotPosVelAcc, desLFootOrigin, desRFootRotPosVelAcc, desRFootOrigin] ...
+       = stateMachineWalking(qj, qj0, CoM_0, ...
+                             l_sole_CoM, r_sole_CoM, l_sole_H_b, r_sole_H_b, rotFrame_H_b0, ...
+                             wrench_leftFoot, wrench_rightFoot, sm, gain, CONFIG)
     persistent state;
     persistent stateTime;
     persistent w_H_fixedLink;
@@ -13,11 +13,12 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
         state            = sm.stateAt0;
         stateTime        = 0;
         w_H_fixedLink    = eye(4);
-        w_H_r_sole0      = w_H_fixedLink * l_sole_H_b / r_sole_H_b;
+        w_H_r_sole0      = w_H_fixedLink * l_sole_H_b / r_sole_H_b; %l_sole_H_b / r_sole_H_b;
         l_sole_H_b0      = l_sole_H_b;
     end
     
     CoMDes               = CoM_0; %CoM_0 represents initial value of w_H_CoM
+    feetActivation       = [1; 1];
     qDes                 = qj0;
     w_H_b                = eye(4);
 
@@ -28,7 +29,7 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
     desRFootRotPosVelAcc = [eye(3),zeros(3,2)];
     desRFootOrigin       = w_H_r_sole0(1:3,4);
     
-    %Feet are considered in contact with the ground by default.
+        %Feet are considered in contact with the ground by default.
     %Contact switching happens at foot liftoff and foot touchdown. No contact is considered: 
     %once the vertical wrench acting on this foot is below a threshold (foot liftoff)
     %and as long as the vertical wrench acting on this foot is  below a threshold (foot touchdown)
@@ -40,7 +41,6 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
            (state >= 9) && wrench_leftFoot(3) < sm.wrench.thresholdContactOn
         feetActivation(1) = 0;
     end
-    
     
     %% STATES
     % 1 - Two feet balancing
@@ -69,7 +69,8 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
            if sm.demoOnlyRightFoot
                 state     = 6; 
                 stateTime = 0;
-           end           
+           end
+           
         end
     end
     
@@ -86,7 +87,7 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
         fixed_link_CoMDes = w_H_fixedLink\[CoMDes;1];
         CoMError          = fixed_link_CoMDes(1:3) - l_sole_CoM(1:3);
        
-        if norm(CoMError) < sm.com.threshold && ~feetActivation(2)
+        if norm(CoMError) < sm.com.threshold && ~feetActivation(2) %wrench_rightFoot(3) < sm.wrench.thresholdContactOff
            state          = 3; 
         end
     end
@@ -94,6 +95,7 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
     %% 3 - LEFT FOOT BALANCING 
     if state == 3 
         w_H_b          = w_H_fixedLink * l_sole_H_b;
+%         feetActivation    = [1; 0]; %right foot is no longer a constraint        
 
         % Set the center of mass projection onto the x-y plane to be
         % coincident to the origin of the left foot (l_sole) plus a
@@ -121,15 +123,17 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
     
     %% 4 - PREPARING FOR SWITCHING
     if state == 4 
-        w_H_b       = w_H_fixedLink * l_sole_H_b;
-        
+        w_H_b          = w_H_fixedLink * l_sole_H_b;
+%         feetActivation    = [1; 0]; %right foot is no longer a constraint 
+            
         % Set the center of mass projection onto the x-y plane to be
         % coincident to the origin of the left foot (l_sole) plus a
         % configurable delta
-        CoMDes      = [w_H_fixedLink(1:2,4);CoM_0(3)] + sm.com.states(state,:)';         
-        qDes        =  sm.joints.states(state,:)';
-        desRFootOrigin = w_H_fixedLink(1:3,4) + sm.origin.rightFoot(state,:)';
-
+        CoMDes         = [w_H_fixedLink(1:2,4);CoM_0(3)] + sm.com.states(state,:)';         
+        qDes           = sm.joints.states(state,:)';  
+%         desRFootOrigin = w_H_fixedLink(1:3,4) + sm.origin.rightFoot(state,:)';
+        desRFootOrigin_fromState = w_H_fixedLink(1:3,4) + sm.origin.rightFoot(state,:)';
+        desRFootOrigin = [desRFootOrigin(1); desRFootOrigin(2); desRFootOrigin_fromState(3)];
         
         %if not using feet position as a constraint, but only relying on postural
         %task, then the error on leg posture shall be used
@@ -142,6 +146,7 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
         else %otherwise, use the error on foot position
             RFootOrigin  = w_H_b / r_sole_H_b;
             r_foot_error = RFootOrigin(1:3, 4) - desRFootOrigin;
+        
             if norm(r_foot_error) < sm.foot.threshold
                 state    = 5;
             end
@@ -151,15 +156,18 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
     %% 5 - LOOKING FOR A CONTACT
     if state == 5
         w_H_b          =  w_H_fixedLink * l_sole_H_b;
+%         feetActivation    = [1; 0]; %right foot is no longer a constraint
      
         % Set the center of mass projection onto the x-y plane to be
         % coincident to the origin of the left foot (l_sole) plus a
         % configurable delta
         CoMDes         = [w_H_fixedLink(1:2,4);CoM_0(3)] + sm.com.states(state,:)';         
         qDes           = sm.joints.states(state,:)';
-        desRFootOrigin = w_H_fixedLink(1:3,4) + sm.origin.rightFoot(state,:)';
+%         desRFootOrigin = desRFootOrigin; % w_H_fixedLink(1:3,4) + sm.origin.rightFoot(state,:)';
+        desRFootOrigin_fromState = w_H_fixedLink(1:3,4) + sm.origin.rightFoot(state,:)';
+        desRFootOrigin = [desRFootOrigin(1); desRFootOrigin(2); desRFootOrigin_fromState(3)];
 
-        if feetActivation(2)
+        if feetActivation(2) %wrench_rightFoot(3) > sm.wrench.thresholdContactOn
             state      = 6;
         end
     end
@@ -190,15 +198,16 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
         fixed_link_CoMDes = w_H_fixedLink\[CoMDes;1];       
         CoMError          = fixed_link_CoMDes(1:3) - r_sole_CoM(1:3);
 
-        if norm(CoMError) < sm.com.threshold  && ~feetActivation(1)
+        if norm(CoMError) < sm.com.threshold && ~feetActivation(1) %wrench_leftFoot(3) < sm.wrench.thresholdContactOff
            state          = 8; 
         end
 
     end   
     
-        %% 8 - RIGHT FOOT BALANCING 
+    %% 8 - RIGHT FOOT BALANCING 
     if state == 8 
         w_H_b          =  w_H_fixedLink * r_sole_H_b;
+%         feetActivation = [0; 1]; %left foot is no longer a constraint  
 
         % Set the center of mass projection onto the x-y plane to be
         % coincident to the origin of the left foot (l_sole) plus a
@@ -227,13 +236,16 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
     %% 9 - PREPARING FOR SWITCHING
     if state == 9 
         w_H_b       = w_H_fixedLink * r_sole_H_b;
+%         feetActivation = [0; 1]; %left foot is no longer a constraint        
     
         % Set the center of mass projection onto the x-y plane to be
         % coincident to the origin of the left foot (l_sole) plus a
         % configurable delta
         CoMDes      = [w_H_fixedLink(1:2,4);CoM_0(3)] + sm.com.states(state,:)';         
-        qDes        =  sm.joints.states(state,:)';
-        desLFootOrigin = w_H_fixedLink(1:3,4) + sm.origin.leftFoot(state,:)';
+        qDes        =  sm.joints.states(state,:)';  
+%         desLFootOrigin = w_H_fixedLink(1:3,4) + sm.origin.leftFoot(state,:)';
+        desLFootOrigin_fromState = w_H_fixedLink(1:3,4) + sm.origin.leftFoot(state,:)';
+        desLFootOrigin = [desLFootOrigin(1); desLFootOrigin(2); desLFootOrigin_fromState(3)];
 
         %if not using feet position as a constraint, but only relying on postural
         %task, then the error on leg posture shall be used
@@ -246,6 +258,7 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
         else %otherwise, use the error on foot position
             l_footOrigin   = w_H_b / l_sole_H_b;
             l_foot_error   = l_footOrigin(1:3, 4) - desLFootOrigin;
+            
             if norm(l_foot_error) < sm.foot.threshold
                 state    = 10;
             end
@@ -255,15 +268,18 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
     %% 10 - LOOKING FOR A CONTACT
     if state == 10
         w_H_b          =  w_H_fixedLink * r_sole_H_b;
+%         feetActivation    = [0; 1]; %left foot is no longer a constraint
         
         % Set the center of mass projection onto the x-y plane to be
         % coincident to the origin of the left foot (l_sole) plus a
         % configurable delta
         CoMDes         = [w_H_fixedLink(1:2,4);CoM_0(3)] + sm.com.states(state,:)';         
         qDes           = sm.joints.states(state,:)';
-        desLFootOrigin = w_H_fixedLink(1:3,4) + sm.origin.leftFoot(state,:)';
+%         desLFootOrigin = desLFootOrigin; % w_H_fixedLink(1:3,4) + sm.origin.leftFoot(state,:)';
+        desLFootOrigin_fromState = w_H_fixedLink(1:3,4) + sm.origin.leftFoot(state,:)';
+        desLFootOrigin = [desLFootOrigin(1); desLFootOrigin(2); desLFootOrigin_fromState(3)];
 
-        if feetActivation(1)
+        if feetActivation(1) %wrench_leftFoot(3) > sm.wrench.thresholdContactOn 
             state      = 11;
         end
     end
@@ -297,8 +313,13 @@ function [w_H_b, CoMDes, qDes, feetActivation, impedances, dampings, PDgainsPos,
                            gain.lFoot.posPD(state,1:3)', gain.lFoot.posPD(state,4:6)';
                            gain.rFoot.posPD(state,1:3)', gain.rFoot.posPD(state,4:6)'];
     
-    PDgainsRot          = [gain.root.rotPD(state,:);
-                           gain.lFoot.rotPD(state,:);
-                           gain.rFoot.rotPD(state,:)]; 
+%     PDgainsRot          = [gain.root.rotPD(state,:);
+%                            gain.lFoot.rotPD(state,:);
+%                            gain.rFoot.rotPD(state,:)]; 
+                       
+   PDgainsRot           = [gain.root.rotPD( state,1)*ones(3,1), gain.root.rotPD( state,2)*ones(3,1);
+                           gain.lFoot.rotPD(state,1)*ones(3,1), gain.lFoot.rotPD(state,2)*ones(3,1);
+                           gain.rFoot.rotPD(state,1)*ones(3,1), gain.rFoot.rotPD(state,2)*ones(3,1)];
+                     
     
     jointsSmoothingTime = sm.jointsSmoothingTimes(state);

@@ -84,9 +84,9 @@ gain.joints.impedances      = [20   50   50, 10   10    10   10, 10   10    10  
                                30   30   30, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   25   15    30     25  25;  % state ==  6  TRANSITION TO INITIAL POSITION 
                                20   30   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   25   15    30     25  25;  % state ==  7  COM TRANSITION TO RIGHT FOOT
                                20   30   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   25   15    30     25  25;  % state ==  8  RIGHT FOOT BALANCING
-                               20   20   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   25   15    30     25  25;  % state ==  9  PREPARING FOR SWITCHING 
-                               20   20   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   25   15    30     25  25;  % state == 10  LOOKING FOR CONTACT
-                               20   20   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   25   15    30     25  25]; % state == 11  TRANSITION TO INITIAL POSITION
+                               20   20   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   15   15    15     15  15;  % state ==  9  PREPARING FOR SWITCHING 
+                               20   20   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   15   15    15     15  15;  % state == 10  LOOKING FOR CONTACT
+                               20   20   20, 10   10    10   10, 10   10    10   10, 15   25   15    30     25  25, 15   15   15    15     15  15]; % state == 11  TRANSITION TO INITIAL POSITION
    
 gain.joints.dampings        = 2 * sqrt(gain.joints.impedances);
 
@@ -114,7 +114,7 @@ sm.joints.thresholdNotInContact  = 5;    % Degrees
 sm.joints.thresholdInContact     = 5;    % Degrees
     
 sm.jointsSmoothingTimes          = [2;   %% state ==  1  TWO FEET BALANCING
-                                    2;   %% state ==  2  COM TRANSITION TO LEFT FOOT
+                                    2;   %% state ==  2  COMTRANSITION TO LEFT FOOT
                                     2;   %% state ==  3  LEFT FOOT BALANCING
                                     2;   %% state ==  4  PREPARING FOR SWITCHING
                                     2;   %% state ==  5  LOOKING FOR CONTACT
@@ -148,7 +148,7 @@ sm.origin.leftFoot  = [0.0,  0.00,  0.00;   %% state ==  1  TWO FEET BALANCING  
                        0.0,  0.00,  0.00;   %% state ==  7  COM TRANSITION TO RIGHT FOOT : THIS REFERENCE IS IGNORED
                        0.0,  0.13,  0.05;   %% state ==  8  RIGHT FOOT BALANCING
                        0.0,  0.13,  0.00;   %% state ==  9  PREPARING FOR SWITCHING      : THIS REFERENCE IS IGNORED
-                       0.0,  0.13, -0.01;   %% state == 10  LOOKING FOR CONTACT          : THIS REFERENCE IS IGNORED
+                       0.0,  0.13,  0.00;   %% state == 10  LOOKING FOR CONTACT          : THIS REFERENCE IS IGNORED
                        0.0,  0.00,  0.00];  %% state == 11  TRANSITION INIT POSITION     : THIS REFERENCE IS IGNORED
                   
                                          
@@ -156,7 +156,7 @@ sm.origin.rightFoot = [0.0,  0.00,  0.00;   %% state ==  1  TWO FEET BALANCING N
                        0.0,  0.00,  0.00;   %% state ==  2  COM TRANSITION TO LEFT FOOT  : THIS REFERENCE IS IGNORED
                        0.0, -0.13,  0.05;   %% state ==  3  LEFT FOOT BALANCING
                        0.0, -0.13,  0.00;   %% state ==  4  PREPARING FOR SWITCHING      : THIS REFERENCE IS IGNORED
-                       0.0, -0.13, -0.01;   %% state ==  5  LOOKING FOR CONTACT          : THIS REFERENCE IS IGNORED
+                       0.0, -0.13,  0.00;   %% state ==  5  LOOKING FOR CONTACT          : THIS REFERENCE IS IGNORED
                        0.0,  0.00,  0.00;   %% state ==  6  RETURN TO INITIAL POSITION   : THIS REFERENCE IS IGNORED
                        0.0,  0.00,  0.00;   %% state ==  7  COM TRANSITION TO RIGHT FOOT : THIS REFERENCE IS IGNORED
                        0.0,  0.00,  0.00;   %% state ==  8  RIGHT FOOT BALANCING         : THIS REFERENCE IS IGNORED
@@ -209,4 +209,5 @@ sm.joints.states    = [zeros(1,ROBOT_DOF);                                   %% 
                          0.0000,-0.0741, 0.0000, 0.0000, 0.0250, 0.1200];    %
                        zeros(1,ROBOT_DOF)];                                  %% state == 11  TRANSITION INITIAL POSITION : THIS REFERENCE IS IGNORED
 
+                                        
 clear PCoM Proot PlfootPos PlfootRot PrfootPos PrfootRot;                  

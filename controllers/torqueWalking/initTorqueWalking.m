@@ -74,40 +74,12 @@ CONFIG.PITCH_IMU_FILTER    = true;
 % equal to false, recall that the neck is assumed to be in (0,0,0)
 CONFIG.CORRECT_NECK_IMU    = true;
 
-% CONFIG.QP.USE_STRICT_TASK_PRIORITIES: when set to true, the balancing
-% controller solves an optimization problem for the desired posture, with
-% desired tasks given as equality constraints. When set to false, the 
-%controller solves for the weighted desired posture and tasks.
-CONFIG.QP.USE_STRICT_TASK_PRIORITIES = false;
-
-% CONFIG.QP.USE_CONTINUITY_CONSTRAINTS: when set to true, control torques
-% obtained from QP optimization are constrained to continuous values.
-CONFIG.QP.USE_CONTINUITY_CONSTRAINTS = false;
-
 %CONFIG.USE_INVERSE_KINEMATICS: when set to true, use reference joint
 %positions computed from integration-based inverse kinematics; when set to
 %false, use desired joint positions from state machine.
 CONFIG.USE_INVERSE_KINEMATICS = false;
 
-%CONFIG.SMOOTH_DES_COM: when set to true, the desired streamed values of 
-%the center of mass are smoothed internally; 
-CONFIG.SMOOTH_DES_COM      = true;  
 
-%CONFIG.SMOOTH_DES_Q: when set to true, the desired streamed values of 
-%the postural tasks are smoothed internally
-CONFIG.SMOOTH_DES_Q        = true;
-%other tasks (e.g. feet positions are automatically smoothed)
-
-% CONFIG.SCOPES.ALL: when set to false, all visualizations are disabled
-CONFIG.SCOPES.ALL         = true;
-% CONFIG.SCOPES.VALUE: when set to true, visualization of the element 
-% in question is enabled
-CONFIG.SCOPES.QP          = true;
-CONFIG.SCOPES.TORQUES     = true;
-CONFIG.SCOPES.JOINTS      = true;
-CONFIG.SCOPES.FEET        = true;
-CONFIG.SCOPES.TASKS       = true;
-CONFIG.SCOPES.GAINS       = false;
 %% 
 addpath('./src/')
 addpath('../utilityMatlabFunctions/')

@@ -9,11 +9,14 @@ PORTS.WBDT_RIGHTLEG_EE = '/wholeBodyDynamics/right_leg/cartesianEndEffectorWrenc
 
 %% Constants used for tolerance/regularization/saturation
 
+CONFIG.WALKING = false; %toggle if only keeping initial position or walking
+
 constants.maxTolerance     = 1e17; %Maximum value for unconstrained variable
 constants.minTolerance     = 1e-4; %Tolerance on the value of an equality constrained variable
 constants.saturationTorque = 60;   %Maximum torque value sent to actuators
 constants.saturationForce  = 500;  %Maximum contact force value considered
-constants.thresholdContact = 10; %25;   %Minimum vertical force to consider a contact to be active
+constants.thresholdContact = 10;   %Minimum vertical force to consider a contact to be active
+constants.initStandingTime = inf; %Time delay from starting the controller until the robot starts walking
 
 reg.pinvDamp      = 1e-10; %Regularizing term for matrix pseudoinverse operation in base velocity computation
 reg.joint_torques = 1e-7;  %Weight on regularization of joint torques

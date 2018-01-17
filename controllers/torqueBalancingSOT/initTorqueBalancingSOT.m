@@ -94,7 +94,7 @@ CONFIG.CORRECT_NECK_IMU    = true;
 %       tasks defined as equality constraints on CoM position, root orientation 
 %       and feet pose (position and orientation)
 %       use it by setting CONFIG.QP.USE_STRICT_TASK_PRIORITIES_WITH_FOOT_ACCELERATION = true
-controllerType = 2;
+controllerType = 1;
 switch controllerType
     case 1
         CONFIG.QP.USE_STRICT_TASK_PRIORITIES_NO_FOOT_ACCELERATION   = false;
@@ -116,25 +116,17 @@ CONFIG.QP.USE_CONTINUITY_CONSTRAINTS = false;
 %false, use desired joint positions from state machine.
 CONFIG.USE_INVERSE_KINEMATICS = false;
 
-% CONFIG.QP.USE_CENTROIDAL_TRANSFORMATION: when set to true, centroidal
-% transformation is performed, in order to use the center of mass of the
-% robot as base. This affects the computations performed, but shoud have 
-% no incidence on the behavior of the robot.
-CONFIG.QP.USE_CENTROIDAL_TRANSFORMATION = false;
-
-%Impedance/damping gains can be set manually, or they can be tuned automatically
-%using a perturbation-base extremum seeking (PES) algorithm.
-CONFIG.USE_PES_gain_tuning = false;
+CONFIG.USE_gain_tuning = true;
 
 % CONFIG.SCOPES.ALL: when set to false, all visualizations are disabled
 CONFIG.SCOPES.ALL         = true;
 % CONFIG.SCOPES.VALUE: when set to true, visualization of the element 
 % in question is enabled
 CONFIG.SCOPES.QP          = true;
-CONFIG.SCOPES.TORQUES     = false;
+CONFIG.SCOPES.TORQUES     = true;
 CONFIG.SCOPES.JOINTS      = true;
 CONFIG.SCOPES.FEET        = true;
-CONFIG.SCOPES.TASKS       = false;
+CONFIG.SCOPES.TASKS       = true;
 CONFIG.SCOPES.GAINS       = true;
 %% 
 

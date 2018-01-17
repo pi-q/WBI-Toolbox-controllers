@@ -1,5 +1,6 @@
 function ddx_root_bounds = CoMaccelerationBounds( w_H_root, rootVelocity, ...
-                           w_H_l_sole, w_H_r_sole, feetActivation, ...
+                           w_H_l_sole, w_H_r_sole, ...
+                           feetActivation, state, ...
                            gain )
 
 %% NOTE: definition of position bounds shall be redefined for walking purposes
@@ -15,11 +16,11 @@ x_l_sole = w_H_l_sole(1:2,4);
 x_r_sole = w_H_r_sole(1:2,4);
 
 %% Bounds on root position, for 2 feet balancing
-if feetActivation(1) > 0.9 && feetActivation(2) > 0.9
+if state == 1 %feetActivation(1) > 0.9 && feetActivation(2) > 0.9
     x_root_lowerBound   = min(x_r_sole, x_l_sole) + [gain.footSize(1,1); gain.footSize(2,1)];
     x_root_upperBound   = max(x_r_sole, x_l_sole) + [gain.footSize(1,2); gain.footSize(2,2)];
     
-elseif feetActivation(2) < 0.9 %only left foot on ground
+elseif state == 2 %feetActivation(2) < 0.9 %only left foot on ground
     x_root_lowerBound   = x_l_sole + [gain.footSize(1,1); gain.footSize(2,1)];
     x_root_upperBound   = x_l_sole + [gain.footSize(1,2); gain.footSize(2,2)];
     
